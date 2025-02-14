@@ -1,6 +1,15 @@
 import { readFile } from 'fs/promises';
 import { marked } from 'marked';
+import hljs from 'highlight.js';
 import puppeteer from 'puppeteer';
+
+// Configure marked to use highlight.js for code blocks.
+marked.setOptions({
+  highlight: (code, lang) => {
+    const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+    return hljs.highlight(code, { language }).value;
+  }
+});
 
 /**
  * Convert a Markdown file to a PDF.
@@ -16,19 +25,18 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
     // Read the Markdown file content
     const markdownContent = await readFile(markdownPath, 'utf8');
 
-    // Convert Markdown to HTML
+    // Convert Markdown to HTML with syntax highlighting for code blocks
     const htmlContent = marked.parse(markdownContent);
 
     // Wrap the HTML content with a basic template and inline styles.
-    // The patch removes restrictions on code block splitting, ensuring that long
-    // code blocks break across pages gracefully and that PDF pages have proper margins.
+    // The CSS includes page margin definitions and a theme for code highlighting.
     const html = `<!DOCTYPE html>
 <html>
   <head>
     <meta charset="UTF-8">
     <title>Document</title>
     <style>
-      /* Ensure proper page margins in the printed PDF */
+      /* PDF page margins */
       @page {
         margin: 40px;
       }
@@ -54,7 +62,6 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
         /* Allow long code blocks to break across pages */
         white-space: pre-wrap;
         overflow-wrap: break-word;
-        /* Removing page-break-inside restrictions so that blocks can split */
         margin-bottom: 20px;
       }
       code { 
@@ -77,6 +84,74 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
       }
       th { 
         background-color: #f2f2f2; 
+      }
+      /* Highlight.js default theme */
+      .hljs {
+        display: block;
+        overflow-x: auto;
+        padding: 0.5em;
+        background: #f0f0f0;
+        color: #444;
+      }
+      .hljs-comment,
+      .hljs-quote {
+        color: #998;
+        font-style: italic;
+      }
+      .hljs-keyword,
+      .hljs-selector-tag,
+      .hljs-subst {
+        color: #333;
+        font-weight: bold;
+      }
+      .hljs-number,
+      .hljs-literal,
+      .hljs-variable,
+      .hljs-template-variable,
+      .hljs-tag .hljs-attr {
+        color: #008080;
+      }
+      .hljs-string,
+      .hljs-doctag {
+        color: #d14;
+      }
+      .hljs-title,
+      .hljs-section,
+      .hljs-selector-id {
+        color: #900;
+        font-weight: bold;
+      }
+      .hljs-type,
+      .hljs-class .hljs-title {
+        color: #458;
+        font-weight: bold;
+      }
+      .hljs-tag,
+      .hljs-name,
+      .hljs-attribute {
+        color: #000080;
+      }
+      .hljs-regexp,
+      .hljs-link {
+        color: #009926;
+      }
+      .hljs-symbol,
+      .hljs-bullet {
+        color: #990073;
+      }
+      .hljs-built_in,
+      .hljs-builtin-name {
+        color: #0086b3;
+      }
+      .hljs-meta {
+        color: #999;
+        font-weight: bold;
+      }
+      .hljs-deletion {
+        background: #fdd;
+      }
+      .hljs-addition {
+        background: #dfd;
       }
     </style>
   </head>

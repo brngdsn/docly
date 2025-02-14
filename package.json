@@ -1,6 +1,6 @@
 {
   "name": "docly",
-  "version": "1.0.0",
+  "version": "0.2.2",
   "description": "A tool to convert Markdown files into PDFs.",
   "main": "src/index.js",
   "bin": {
@@ -23,6 +23,7 @@
   "dependencies": {
     "commander": "^10.0.0",
     "marked": "^5.0.0",
-    "puppeteer": "^20.8.0"
+    "puppeteer": "^20.8.0",
+    "highlight.js": "^11.8.0"
   }
 }

@@ -1,0 +1,28 @@
+{
+  "name": "docly",
+  "version": "1.0.0",
+  "description": "A tool to convert Markdown files into PDFs.",
+  "main": "src/index.js",
+  "bin": {
+    "docly": "./bin/docly.js"
+  },
+  "type": "module",
+  "scripts": {
+    "start": "node bin/docly.js"
+  },
+  "engines": {
+    "node": ">=20.8.0"
+  },
+  "keywords": [
+    "markdown",
+    "pdf",
+    "conversion",
+    "docly"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^10.0.0",
+    "marked": "^5.0.0",
+    "puppeteer": "^20.8.0"
+  }
+}

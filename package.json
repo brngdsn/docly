@@ -1,6 +1,6 @@
 {
   "name": "@brngdsn/docly",
-  "version": "0.2.4",
+  "version": "0.3.0",
   "description": "A tool to convert Markdown files into PDFs and merge multiple PDFs together.",
   "main": "src/index.js",
   "bin": {

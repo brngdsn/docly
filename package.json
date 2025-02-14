@@ -1,18 +1,26 @@
 {
-  "name": "docly",
-  "version": "0.2.2",
+  "name": "@brngdsn/docly",
+  "version": "0.2.3",
   "description": "A tool to convert Markdown files into PDFs.",
   "main": "src/index.js",
   "bin": {
     "docly": "./bin/docly.js"
   },
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/brngdsn/docly.git"
+  },
   "scripts": {
     "start": "node bin/docly.js"
   },
   "engines": {
     "node": ">=20.8.0"
   },
+  "bugs": {
+    "url": "https://github.com/brngdsn/docly/issues"
+  },
+  "homepage": "https://github.com/brngdsn/docly#readme",
   "keywords": [
     "markdown",
     "pdf",

@@ -14,7 +14,7 @@ marked.setOptions({
 /**
  * Convert a Markdown file to a PDF.
  *
- * @param {Object} options - The options for conversion.
+ * @param {Object} options - Options for conversion.
  * @param {string} options.markdownPath - Path to the Markdown input file.
  * @param {string} options.pdfPath - Path to output the generated PDF.
  * @returns {Promise<Object>} Resolves with an object containing the success status and output path.
@@ -29,7 +29,6 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
     const htmlContent = marked.parse(markdownContent);
 
     // Wrap the HTML content with a basic template and inline styles.
-    // The CSS includes page margin definitions and a theme for code highlighting.
     const html = `<!DOCTYPE html>
 <html>
   <head>
@@ -59,7 +58,6 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
       pre {
         background: #f4f4f4;
         padding: 10px;
-        /* Allow long code blocks to break across pages */
         white-space: pre-wrap;
         overflow-wrap: break-word;
         margin-bottom: 20px;

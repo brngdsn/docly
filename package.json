@@ -1,7 +1,7 @@
 {
   "name": "@brngdsn/docly",
-  "version": "0.2.3",
-  "description": "A tool to convert Markdown files into PDFs.",
+  "version": "0.2.4",
+  "description": "A tool to convert Markdown files into PDFs and merge multiple PDFs together.",
   "main": "src/index.js",
   "bin": {
     "docly": "./bin/docly.js"
@@ -25,13 +25,15 @@
     "markdown",
     "pdf",
     "conversion",
+    "merge",
     "docly"
   ],
   "license": "MIT",
   "dependencies": {
     "commander": "^10.0.0",
+    "highlight.js": "^11.8.0",
     "marked": "^5.0.0",
-    "puppeteer": "^20.8.0",
-    "highlight.js": "^11.8.0"
+    "pdf-lib": "^1.17.1",
+    "puppeteer": "^20.8.0"
   }
 }

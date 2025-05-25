@@ -3,15 +3,18 @@ import { program } from 'commander';
 import process from 'process';
 import { convertMarkdownToPdf } from '../src/index.js';
 import { mergePdfs } from '../src/pdfMerger.js';
+import { extractPdfPages } from '../src/pdfExtractor.js';
 
 program
   .name('docly')
-  .description('Convert Markdown files to PDF or merge multiple PDFs into one')
+  .description('Convert Markdown files to PDF, merge multiple PDFs, or extract pages from PDFs')
   .option('-m, --markdown <file>', 'Path to the Markdown file to convert')
   .option('-g, --group <directory>', 'Directory containing PDF files to merge')
+  .option('-e, --extract <file>', 'Path to the PDF file to extract pages from')
+  .option('-r, --range <pages>', 'Page range to extract (e.g., "1", "1-3", "1,3,5", "1-3,5,7-9")')
   .requiredOption('-p, --pdf <file>', 'Output PDF file name')
   .option('-s, --sort <order>', 'Sort order for merging PDFs ("asc" or "desc")', 'asc')
-  .version('1.0.0');
+  .version('0.4.0');
 
 program.parse(process.argv);
 
@@ -19,7 +22,19 @@ const options = program.opts();
 
 (async () => {
   try {
-    if (options.group) {
+    if (options.extract) {
+      if (!options.range) {
+        console.error('Error: You must specify a page range (-r) when extracting pages.');
+        process.exit(1);
+      }
+      console.log(`Extracting pages "${options.range}" from "${options.extract}" to "${options.pdf}"...`);
+      await extractPdfPages({
+        inputPath: options.extract,
+        outputPath: options.pdf,
+        pages: options.range
+      });
+      console.log('Extraction successful.');
+    } else if (options.group) {
       console.log(`Merging PDFs from "${options.group}" into "${options.pdf}"...`);
       await mergePdfs({
         dirPath: options.group,
@@ -35,7 +50,7 @@ const options = program.opts();
       });
       console.log('Conversion successful.');
     } else {
-      console.error('Error: You must provide either a Markdown file (-m) for conversion or a directory (-g) for PDF merging.');
+      console.error('Error: You must provide either a Markdown file (-m) for conversion, a directory (-g) for PDF merging, or a PDF file (-e) for page extraction.');
       process.exit(1);
     }
   } catch (error) {

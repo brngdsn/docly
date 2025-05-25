@@ -2,13 +2,19 @@ import { readFile } from 'fs/promises';
 import { marked } from 'marked';
 import hljs from 'highlight.js';
 import puppeteer from 'puppeteer';
+import path from 'path';
+import { pathToFileURL } from 'url';
+import { writeFile, unlink } from 'fs/promises';
+import { tmpdir } from 'os';
 
 // Configure marked to use highlight.js for code blocks.
 marked.setOptions({
   highlight: (code, lang) => {
     const language = hljs.getLanguage(lang) ? lang : 'plaintext';
     return hljs.highlight(code, { language }).value;
-  }
+  },
+  mangle: false,
+  headerIds: false
 });
 
 /**
@@ -22,45 +28,240 @@ marked.setOptions({
  */
 export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
   try {
+    // Get the absolute path and directory of the markdown file
+    const absoluteMarkdownPath = path.resolve(markdownPath);
+    const markdownDir = path.dirname(absoluteMarkdownPath);
+    
     // Read the Markdown file content
     const markdownContent = await readFile(markdownPath, 'utf8');
 
+    // Create a custom renderer to handle cover images
+    const renderer = new marked.Renderer();
+    const originalImage = renderer.image.bind(renderer);
+    
+    renderer.image = function(href, title, text) {
+      // Check if this is a cover image (alt text starts with "cover:")
+      if (text && text.toLowerCase().startsWith('cover:')) {
+        const coverType = text.toLowerCase().replace('cover:', '').trim();
+        if (coverType === 'front' || coverType === 'back') {
+          return `<div class="cover-page cover-${coverType}"><img src="${href}" alt="${text}" title="${title || ''}"></div>`;
+        }
+      }
+      // Regular image with caption
+      const imgTag = originalImage(href, title, text);
+      // If there's alt text and it's not empty, add it as a caption
+      if (text && text.trim()) {
+        return `<figure class="image-with-caption">${imgTag}<figcaption>${text}</figcaption></figure>`;
+      }
+      return imgTag;
+    };
+
     // Convert Markdown to HTML with syntax highlighting for code blocks
-    const htmlContent = marked.parse(markdownContent);
+    const htmlContent = marked.parse(markdownContent, { renderer });
+
+    // Post-process to wrap lists in divs for proper margins
+    const processedHtml = htmlContent
+      .replace(/<ul>/g, '<div class="list-wrapper"><ul>')
+      .replace(/<\/ul>/g, '</ul></div>')
+      .replace(/<ol>/g, '<div class="list-wrapper"><ol>')
+      .replace(/<\/ol>/g, '</ol></div>');
+    
+    // Extract cover pages and main content - use non-greedy regex
+    const coverPageRegex = /<div class="cover-page[^>]*><img[^>]*><\/div>/g;
+    const coverPages = processedHtml.match(coverPageRegex) || [];
+    const mainContent = processedHtml.replace(coverPageRegex, '');
+    
+    // Separate front and back covers
+    const frontCovers = coverPages.filter(page => page.includes('cover-front'));
+    const backCovers = coverPages.filter(page => page.includes('cover-back'));
+
+    // Check if this is a cover-only document
+    const isCoverOnly = coverPages.length > 0 && mainContent.trim() === '';
+
+    // Create the base href for the HTML document
+    const baseHref = pathToFileURL(markdownDir + path.sep).href;
+
+    // For cover-only documents, use a simplified HTML structure
+    if (isCoverOnly) {
+      const html = `<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <base href="${baseHref}">
+    <title>Cover</title>
+    <style>
+      @page {
+        margin: 0;
+        size: A4;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html, body {
+        width: 210mm;
+        height: 297mm;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+      .cover-page {
+        width: 210mm;
+        height: 297mm;
+        margin: 0;
+        padding: 0;
+        position: relative;
+        overflow: hidden;
+        display: block;
+      }
+      .cover-page img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        margin: 0;
+        padding: 0;
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    ${coverPages.join('')}
+  </body>
+</html>`;
+
+      // Launch Puppeteer to generate a PDF from the HTML content
+      const browser = await puppeteer.launch({
+        headless: 'new',
+        args: ['--allow-file-access-from-files'] // Allow local file access
+      });
+      const page = await browser.newPage();
+      
+      // Set viewport to A4 dimensions at 96 DPI
+      await page.setViewport({
+        width: 794,  // A4 width in pixels at 96 DPI
+        height: 1123, // A4 height in pixels at 96 DPI
+        deviceScaleFactor: 1
+      });
+      
+      // Save HTML to a temporary file in the same directory as the markdown
+      // This ensures relative paths work correctly
+      const tempHtmlPath = path.join(markdownDir, `.temp-${Date.now()}.html`);
+      await writeFile(tempHtmlPath, html);
+      
+      try {
+        // Navigate to the temporary HTML file
+        await page.goto(pathToFileURL(tempHtmlPath).href, { 
+          waitUntil: 'networkidle0'
+        });
+        
+        // Wait a bit for images to fully load
+        await page.waitForTimeout(500);
+        
+        // Define PDF options for cover pages - exactly one page
+        await page.pdf({ 
+          path: pdfPath, 
+          width: '210mm',
+          height: '297mm',
+          printBackground: true,
+          margin: { top: 0, bottom: 0, left: 0, right: 0 }
+        });
+      } finally {
+        // Clean up temporary file
+        await unlink(tempHtmlPath).catch(() => {}); // Ignore errors if file doesn't exist
+        await browser.close();
+      }
+      
+      return { success: true, pdfPath };
+    }
+
+    // Regular document handling continues below...
 
     // Wrap the HTML content with a basic template and inline styles.
     const html = `<!DOCTYPE html>
 <html>
   <head>
     <meta charset="UTF-8">
+    <base href="${baseHref}">
     <title>Document</title>
     <style>
       /* PDF page margins */
       @page {
-        margin: 20px;
+        margin: 0.5in;
+      }
+      /* Special page setup for cover pages - no margins */
+      @page cover {
+        margin: 0;
       }
       body { 
         font-family: Arial, sans-serif; 
         margin: 0; 
         padding: 0; 
-        line-height: 1.6; 
+        line-height: 1.6;
+        min-height: 0;
       }
       .container {
-        margin: 40px;
+        margin: 0;
+        padding: 0;
+        page-break-before: auto;
+      }
+      /* Cover page styles */
+      .cover-page {
+        page: cover;
+        width: 100vw;
+        height: 100vh;
+        margin: 0;
+        padding: 0;
+        display: block;
+        position: relative;
+        overflow: hidden;
+        page-break-inside: avoid;
+      }
+      /* Only add page break when there's a container after */
+      .cover-page + .container {
+        page-break-before: always;
+      }
+      .cover-page img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        margin: 0;
+        padding: 0;
+        display: block;
       }
       h1, h2, h3, h4, h5, h6 { 
         color: #333; 
         margin-top: 1.2em; 
+        margin-bottom: 0.6em;
       }
       p { 
         margin: 0.6em 0; 
+      }
+      /* List styles with proper indentation */
+      ul, ol {
+        margin: 0.6em 0;
+        padding-left: 2em;
+      }
+      li {
+        margin: 0.3em 0;
+      }
+      /* List wrapper for symmetric margins */
+      .list-wrapper {
+        margin: 0 2em;
       }
       pre {
         background: #f4f4f4;
         padding: 10px;
         white-space: pre-wrap;
         overflow-wrap: break-word;
-        margin-bottom: 20px;
+        margin: 1em 0;
+        border-radius: 4px;
       }
       code { 
         background: #f4f4f4; 
@@ -82,6 +283,39 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
       }
       th { 
         background-color: #f2f2f2; 
+      }
+      /* Image styles */
+      img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+        margin: 1em auto;
+      }
+      /* Inline images */
+      p img {
+        display: inline;
+        margin: 0;
+      }
+      /* Figure and caption styles */
+      figure.image-with-caption {
+        margin: 1.5em 0;
+        text-align: center;
+        max-width: 100%;
+        padding: 0;
+        display: block;
+      }
+      figure.image-with-caption img {
+        margin: 0 auto 0.5em;
+        max-width: 100%;
+        height: auto;
+        display: block;
+      }
+      figure.image-with-caption figcaption {
+        font-size: 0.9em;
+        color: #666;
+        font-style: italic;
+        margin-top: 0.5em;
+        padding: 0 1em;
       }
       /* Highlight.js default theme */
       .hljs {
@@ -154,26 +388,41 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
     </style>
   </head>
   <body>
-    <div class="container">
-      ${htmlContent}
-    </div>
+    ${frontCovers.join('')}${mainContent ? `<div class="container">${mainContent}</div>` : ''}${backCovers.join('')}
   </body>
 </html>`;
 
     // Launch Puppeteer to generate a PDF from the HTML content
-    const browser = await puppeteer.launch();
-    const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: 'networkidle0' });
-    
-    // Define PDF options with proper margins.
-    await page.pdf({ 
-      path: pdfPath, 
-      format: 'A4', 
-      printBackground: true,
-      margin: { top: '20px', bottom: '20px', left: '20px', right: '20px' }
+    const browser = await puppeteer.launch({
+      headless: 'new',
+      args: ['--allow-file-access-from-files'] // Allow local file access
     });
+    const page = await browser.newPage();
     
-    await browser.close();
+    // Save HTML to a temporary file in the same directory as the markdown
+    // This ensures relative paths work correctly
+    const tempHtmlPath = path.join(markdownDir, `.temp-${Date.now()}.html`);
+    await writeFile(tempHtmlPath, html);
+    
+    try {
+      // Navigate to the temporary HTML file
+      await page.goto(pathToFileURL(tempHtmlPath).href, { 
+        waitUntil: 'networkidle0'
+      });
+      
+      // Define PDF options with proper margins.
+      await page.pdf({ 
+        path: pdfPath, 
+        format: 'A4', 
+        printBackground: true,
+        margin: { top: '0', bottom: '0', left: '0', right: '0' }
+      });
+    } finally {
+      // Clean up temporary file
+      await unlink(tempHtmlPath).catch(() => {}); // Ignore errors if file doesn't exist
+      await browser.close();
+    }
+    
     return { success: true, pdfPath };
   } catch (error) {
     throw new Error(`Conversion failed: ${error.message}`);

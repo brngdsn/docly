@@ -84,7 +84,7 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
     <style>
       /* PDF page margins */
       @page {
-        margin: 0;
+        margin: 0.5in;
       }
       /* Special page setup for cover pages - no margins */
       @page cover {
@@ -98,10 +98,8 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
       }
       .container {
         margin: 0;
-        padding: 0.5in;
+        padding: 0;
         page-break-before: auto;
-        box-sizing: border-box;
-        min-height: 100vh;
       }
       /* Cover page styles */
       .cover-page {

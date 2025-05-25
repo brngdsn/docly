@@ -65,7 +65,7 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
       .replace(/<\/ul>/g, '</ul></div>')
       .replace(/<ol>/g, '<div class="list-wrapper"><ol>')
       .replace(/<\/ol>/g, '</ol></div>');
-
+    
     // Extract cover pages and main content - use non-greedy regex
     const coverPageRegex = /<div class="cover-page[^>]*><img[^>]*><\/div>/g;
     const coverPages = processedHtml.match(coverPageRegex) || [];
@@ -108,7 +108,6 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
       /* Cover page styles */
       .cover-page {
         page: cover;
-        page-break-after: always;
         width: 100vw;
         height: 100vh;
         margin: 0;
@@ -117,6 +116,10 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
         position: relative;
         overflow: hidden;
       }
+      /* Only add page break if there's content after */
+      .cover-page:not(:last-child) {
+        page-break-after: always;
+      }
       .cover-page img {
         width: 100%;
         height: 100%;
@@ -124,14 +127,6 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
         margin: 0;
         padding: 0;
         display: block;
-      }
-      /* Ensure front cover is at the beginning */
-      .cover-front {
-        page-break-before: avoid;
-      }
-      /* Ensure back cover is at the end */
-      .cover-back {
-        page-break-before: always;
       }
       h1, h2, h3, h4, h5, h6 { 
         color: #333; 

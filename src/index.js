@@ -98,7 +98,8 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
         font-family: Arial, sans-serif; 
         margin: 0; 
         padding: 0; 
-        line-height: 1.6; 
+        line-height: 1.6;
+        min-height: 0;
       }
       .container {
         margin: 0;
@@ -115,12 +116,16 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
         display: block;
         position: relative;
         overflow: hidden;
+        page-break-inside: avoid;
       }
-      /* Only add page break if there's content after */
-      .cover-page:not(:last-child) {
-        page-break-after: always;
+      /* Only add page break when there's a container after */
+      .cover-page + .container {
+        page-break-before: always;
       }
       .cover-page img {
+        position: absolute;
+        top: 0;
+        left: 0;
         width: 100%;
         height: 100%;
         object-fit: cover;
@@ -281,9 +286,7 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
     </style>
   </head>
   <body>
-    ${frontCovers.join('\n')}
-    ${mainContent ? `<div class="container">${mainContent}</div>` : ''}
-    ${backCovers.join('\n')}
+    ${frontCovers.join('')}${mainContent ? `<div class="container">${mainContent}</div>` : ''}${backCovers.join('')}
   </body>
 </html>`;
 

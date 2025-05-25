@@ -121,6 +121,82 @@ docly -e document.pdf -r "1-3,7-10" -p combined-pages.pdf
 
 ---
 
+## 📚 Programmatic Usage
+
+Docly can also be used as a library in your Node.js applications. All CLI features are available programmatically.
+
+### Installation for programmatic use:
+```sh
+npm install @brngdsn/docly
+```
+
+### Import functions:
+```javascript
+import { convertMarkdownToPdf, mergePdfs, extractPdfPages } from '@brngdsn/docly';
+```
+
+### API Examples:
+
+#### Convert Markdown to PDF:
+```javascript
+const result = await convertMarkdownToPdf({
+  markdownPath: './document.md',
+  pdfPath: './output.pdf'
+});
+// result: { success: true, pdfPath: './output.pdf' }
+```
+
+#### Merge PDFs:
+```javascript
+const result = await mergePdfs({
+  dirPath: './pdf-files',
+  pdfPath: './merged.pdf',
+  sort: 'asc' // optional: 'asc' or 'desc'
+});
+// result: { success: true, pdfPath: './merged.pdf' }
+```
+
+#### Extract PDF pages:
+```javascript
+const result = await extractPdfPages({
+  inputPath: './source.pdf',
+  outputPath: './extracted.pdf',
+  pages: '1-3,5,7-10'
+});
+// result: { success: true, outputPath: './extracted.pdf', extractedPages: 7 }
+```
+
+#### Complete example - Create a book:
+```javascript
+import { convertMarkdownToPdf, mergePdfs } from '@brngdsn/docly';
+
+// Convert cover, content, and back cover
+await convertMarkdownToPdf({
+  markdownPath: './cover.md',
+  pdfPath: './temp/1-cover.pdf'
+});
+
+await convertMarkdownToPdf({
+  markdownPath: './content.md',
+  pdfPath: './temp/2-content.pdf'
+});
+
+await convertMarkdownToPdf({
+  markdownPath: './back.md',
+  pdfPath: './temp/3-back.pdf'
+});
+
+// Merge all PDFs
+await mergePdfs({
+  dirPath: './temp',
+  pdfPath: './final-book.pdf'
+});
+```
+
+See the `examples/programmatic-usage.js` file for more detailed examples.
+
+---
+
 ## 🖥 Example Output
 
 ### Markdown to PDF Conversion:

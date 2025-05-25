@@ -10,8 +10,12 @@ docly/
 ├── .git/                      # Git version control directory
 ├── bin/                       # Executable scripts
 │   └── docly.js              # Main CLI executable
+├── examples/                  # Example usage files
+│   └── programmatic-usage.js # Examples of using docly as a library
 ├── src/                       # Source code directory
-│   ├── index.js              # Main application entry point
+│   ├── docly.d.ts            # TypeScript type declarations
+│   ├── docly.js              # Main library entry point (exports all functions)
+│   ├── index.js              # Markdown to PDF conversion logic
 │   ├── pdfExtractor.js       # PDF page extraction functionality
 │   └── pdfMerger.js          # PDF merging functionality
 ├── .gitignore                 # Git ignore rules
@@ -34,12 +38,17 @@ docly/
 - **.gitignore**: Defines files and directories to exclude from Git
 
 ### Source Code
-- **src/index.js**: Main application logic and entry point
+- **src/docly.js**: Main library entry point that exports all public functions
+- **src/docly.d.ts**: TypeScript type declarations for better IDE support
+- **src/index.js**: Core Markdown to PDF conversion logic
 - **src/pdfMerger.js**: Module for PDF merging functionality
 - **src/pdfExtractor.js**: Module for PDF page extraction functionality
 
 ### Executable
 - **bin/docly.js**: CLI executable script for the docly command
+
+### Examples
+- **examples/programmatic-usage.js**: Comprehensive examples showing how to use docly as a library
 
 ### Documentation
 - **README.md**: Main project documentation in Markdown format

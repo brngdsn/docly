@@ -1,0 +1,1 @@
+![cover:front](./Back_cover_for_README_of_npm_mod-zhkk7t7o2q.png)

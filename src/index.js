@@ -98,9 +98,10 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
       }
       .container {
         margin: 0;
-        padding: 1in;
+        padding: 0.5in;
         page-break-before: auto;
         box-sizing: border-box;
+        min-height: 100vh;
       }
       /* Cover page styles */
       .cover-page {

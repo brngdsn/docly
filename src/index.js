@@ -100,19 +100,20 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
         box-sizing: border-box;
       }
       html, body {
-        width: 100%;
-        height: 100%;
+        width: 210mm;
+        height: 297mm;
         margin: 0;
         padding: 0;
         overflow: hidden;
       }
       .cover-page {
-        width: 100vw;
-        height: 100vh;
+        width: 210mm;
+        height: 297mm;
         margin: 0;
         padding: 0;
         position: relative;
         overflow: hidden;
+        display: block;
       }
       .cover-page img {
         position: absolute;
@@ -123,6 +124,7 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
         object-fit: cover;
         margin: 0;
         padding: 0;
+        display: block;
       }
     </style>
   </head>
@@ -138,6 +140,13 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
       });
       const page = await browser.newPage();
       
+      // Set viewport to A4 dimensions at 96 DPI
+      await page.setViewport({
+        width: 794,  // A4 width in pixels at 96 DPI
+        height: 1123, // A4 height in pixels at 96 DPI
+        deviceScaleFactor: 1
+      });
+      
       // Save HTML to a temporary file in the same directory as the markdown
       // This ensures relative paths work correctly
       const tempHtmlPath = path.join(markdownDir, `.temp-${Date.now()}.html`);
@@ -149,13 +158,16 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
           waitUntil: 'networkidle0'
         });
         
+        // Wait a bit for images to fully load
+        await page.waitForTimeout(500);
+        
         // Define PDF options for cover pages - exactly one page
         await page.pdf({ 
           path: pdfPath, 
-          format: 'A4', 
+          width: '210mm',
+          height: '297mm',
           printBackground: true,
-          margin: { top: '0', bottom: '0', left: '0', right: '0' },
-          pageRanges: '1' // Only export the first page
+          margin: { top: 0, bottom: 0, left: 0, right: 0 }
         });
       } finally {
         // Clean up temporary file

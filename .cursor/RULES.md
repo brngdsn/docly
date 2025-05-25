@@ -2,7 +2,7 @@
 
 This document outlines the essential rules and guidelines that must be followed when working on the Docly project.
 
-## 1. Always Use NVM for CLI Execution
+## 1. YOU MUST Always Use NVM for CLI Execution
 
 **Rule**: Before executing any CLI commands or running the application, always ensure you're using the correct Node.js version by running `nvm use`.
 
@@ -19,7 +19,7 @@ npm start
 node bin/docly.js
 ```
 
-## 2. Keep FILE_STRUCTURE.md Updated
+## 2. YOU MUST Keep FILE_STRUCTURE.md Updated
 
 **Rule**: Whenever you add, remove, or reorganize files or directories in the project, you must update `.cursor/FILE_STRUCTURE.md` to reflect the changes.
 
@@ -34,7 +34,7 @@ node bin/docly.js
 
 **Remember**: Respect the `.gitignore` rules when documenting the structure.
 
-## 3. Use Conventional Commits Format
+## 3. YOU MUST Commit all changes using Conventional Commits Format
 
 **Rule**: All Git commits must follow the Conventional Commits specification.
 

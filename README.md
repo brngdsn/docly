@@ -47,13 +47,15 @@ Docly now fully supports images in your Markdown files:
 - **Absolute paths**: Full system paths are supported
 - **Web URLs**: External images from the web (http/https) work as expected
 - **Automatic sizing**: Images are automatically sized to fit within the PDF page width while maintaining aspect ratio
+- **Captions**: Regular images display their alt text as captions below the image in a smaller, italic font
 
 Example Markdown with images:
 ```markdown
 # My Document
 
-![Local image](./assets/screenshot.png)
-![Parent directory image](../images/logo.png)
+![Figure 1: Architecture Diagram](./assets/architecture.png)
+![User Interface Screenshot](../images/ui-screenshot.png)
+![](./logo.png)  <!-- No caption if alt text is empty -->
 ![Web image](https://example.com/image.jpg)
 ```
 

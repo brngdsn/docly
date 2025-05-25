@@ -47,8 +47,13 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
           return `<div class="cover-page cover-${coverType}"><img src="${href}" alt="${text}" title="${title || ''}"></div>`;
         }
       }
-      // Regular image
-      return originalImage(href, title, text);
+      // Regular image with caption
+      const imgTag = originalImage(href, title, text);
+      // If there's alt text and it's not empty, add it as a caption
+      if (text && text.trim()) {
+        return `<figure class="image-with-caption">${imgTag}<figcaption>${text}</figcaption></figure>`;
+      }
+      return imgTag;
     };
 
     // Convert Markdown to HTML with syntax highlighting for code blocks
@@ -169,6 +174,22 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
       p img {
         display: inline;
         margin: 0;
+      }
+      /* Figure and caption styles */
+      figure.image-with-caption {
+        margin: 1.5em auto;
+        text-align: center;
+        max-width: 100%;
+      }
+      figure.image-with-caption img {
+        margin: 0 auto 0.5em;
+      }
+      figure.image-with-caption figcaption {
+        font-size: 0.9em;
+        color: #666;
+        font-style: italic;
+        margin-top: 0.5em;
+        padding: 0 1em;
       }
       /* Highlight.js default theme */
       .hljs {

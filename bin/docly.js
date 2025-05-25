@@ -11,7 +11,7 @@ program
   .option('-g, --group <directory>', 'Directory containing PDF files to merge')
   .requiredOption('-p, --pdf <file>', 'Output PDF file name')
   .option('-s, --sort <order>', 'Sort order for merging PDFs ("asc" or "desc")', 'asc')
-  .version('0.5.0');
+  .version('0.4.0');
 
 program.parse(process.argv);
 

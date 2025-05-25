@@ -60,12 +60,12 @@ Example Markdown with images:
 **Note**: For best results, ensure your image files exist at the specified paths relative to your Markdown file.
 
 #### Cover Pages
-Docly supports rendering images as full-page covers that maintain aspect ratio:
+Docly supports rendering images as full-page covers:
 - **Front Cover**: Use `![cover:front](./cover-image.jpg)` to add a front cover
 - **Back Cover**: Use `![cover:back](./back-cover.jpg)` to add a back cover
 - Cover images are rendered on their own page with no margins
+- Images are cropped to fill the entire page (both width and height)
 - Multiple front or back covers are supported
-- Cover images maintain their aspect ratio while filling the page
 
 Example with covers:
 ```markdown

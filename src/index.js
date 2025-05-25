@@ -108,7 +108,7 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
       .cover-page img {
         width: 100%;
         height: 100%;
-        object-fit: contain;
+        object-fit: cover;
         margin: 0;
         padding: 0;
       }

@@ -177,12 +177,17 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
       }
       /* Figure and caption styles */
       figure.image-with-caption {
-        margin: 1.5em auto;
+        margin: 1.5em 0;
         text-align: center;
         max-width: 100%;
+        padding: 0;
+        display: block;
       }
       figure.image-with-caption img {
         margin: 0 auto 0.5em;
+        max-width: 100%;
+        height: auto;
+        display: block;
       }
       figure.image-with-caption figcaption {
         font-size: 0.9em;

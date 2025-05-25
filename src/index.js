@@ -139,9 +139,8 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
       }
       /* List styles with proper indentation */
       ul, ol {
-        margin: 0.6em 0;
-        padding-left: 2em;
-        padding-right: 2em;
+        margin: 0.6em 2em;
+        padding-left: 1.5em;
       }
       li {
         margin: 0.3em 0;

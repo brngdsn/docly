@@ -84,7 +84,7 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
     <style>
       /* PDF page margins */
       @page {
-        margin: 0.5in;
+        margin: 0;
       }
       /* Special page setup for cover pages - no margins */
       @page cover {
@@ -98,8 +98,9 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
       }
       .container {
         margin: 0;
-        padding: 0.5in;
+        padding: 1in;
         page-break-before: auto;
+        box-sizing: border-box;
       }
       /* Cover page styles */
       .cover-page {
@@ -132,16 +133,26 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
       h1, h2, h3, h4, h5, h6 { 
         color: #333; 
         margin-top: 1.2em; 
+        margin-bottom: 0.6em;
       }
       p { 
         margin: 0.6em 0; 
+      }
+      /* List styles with proper indentation */
+      ul, ol {
+        margin: 0.6em 0;
+        padding-left: 2em;
+      }
+      li {
+        margin: 0.3em 0;
       }
       pre {
         background: #f4f4f4;
         padding: 10px;
         white-space: pre-wrap;
         overflow-wrap: break-word;
-        margin-bottom: 20px;
+        margin: 1em 0;
+        border-radius: 4px;
       }
       code { 
         background: #f4f4f4; 
@@ -299,7 +310,7 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
         path: pdfPath, 
         format: 'A4', 
         printBackground: true,
-        margin: hasCoverPages ? { top: '0', bottom: '0', left: '0', right: '0' } : { top: '0.5in', bottom: '0.5in', left: '0.5in', right: '0.5in' }
+        margin: { top: '0', bottom: '0', left: '0', right: '0' }
       });
     } finally {
       // Clean up temporary file

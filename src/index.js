@@ -54,14 +54,17 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
     // Convert Markdown to HTML with syntax highlighting for code blocks
     const htmlContent = marked.parse(markdownContent, { renderer });
 
-    // Extract cover pages and main content
-    const coverPageRegex = /<div class="cover-page[^>]*>[\s\S]*?<\/div>/g;
+    // Extract cover pages and main content - use non-greedy regex
+    const coverPageRegex = /<div class="cover-page[^>]*><img[^>]*><\/div>/g;
     const coverPages = htmlContent.match(coverPageRegex) || [];
     const mainContent = htmlContent.replace(coverPageRegex, '');
     
     // Separate front and back covers
     const frontCovers = coverPages.filter(page => page.includes('cover-front'));
     const backCovers = coverPages.filter(page => page.includes('cover-back'));
+
+    // Check if we have any cover pages
+    const hasCoverPages = frontCovers.length > 0 || backCovers.length > 0;
 
     // Create the base href for the HTML document
     const baseHref = pathToFileURL(markdownDir + path.sep).href;
@@ -88,39 +91,29 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
         padding: 0; 
         line-height: 1.6; 
       }
-      /* Remove all margins when cover pages are present */
-      body:has(.cover-page) {
-        margin: 0 !important;
-        padding: 0 !important;
-      }
       .container {
         margin: 40px;
+        page-break-before: auto;
       }
       /* Cover page styles */
       .cover-page {
         page: cover;
         page-break-after: always;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
+        width: 100vw;
+        height: 100vh;
         margin: 0;
         padding: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        display: block;
+        position: relative;
         overflow: hidden;
       }
       .cover-page img {
-        position: absolute;
-        top: 0;
-        left: 0;
         width: 100%;
         height: 100%;
         object-fit: cover;
         margin: 0;
         padding: 0;
+        display: block;
       }
       /* Ensure front cover is at the beginning */
       .cover-front {
@@ -279,7 +272,7 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
         path: pdfPath, 
         format: 'A4', 
         printBackground: true,
-        margin: { top: '20px', bottom: '20px', left: '20px', right: '20px' }
+        margin: hasCoverPages ? { top: '0', bottom: '0', left: '0', right: '0' } : { top: '20px', bottom: '20px', left: '20px', right: '20px' }
       });
     } finally {
       // Clean up temporary file

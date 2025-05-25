@@ -37,7 +37,7 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
     <style>
       /* PDF page margins */
       @page {
-        margin: 40px;
+        margin: 20px;
       }
       body { 
         font-family: Arial, sans-serif; 
@@ -170,7 +170,7 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
       path: pdfPath, 
       format: 'A4', 
       printBackground: true,
-      margin: { top: '40px', bottom: '40px', left: '40px', right: '40px' }
+      margin: { top: '20px', bottom: '20px', left: '20px', right: '20px' }
     });
     
     await browser.close();

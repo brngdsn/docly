@@ -75,8 +75,98 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
     const frontCovers = coverPages.filter(page => page.includes('cover-front'));
     const backCovers = coverPages.filter(page => page.includes('cover-back'));
 
+    // Check if this is a cover-only document
+    const isCoverOnly = coverPages.length > 0 && mainContent.trim() === '';
+
     // Create the base href for the HTML document
     const baseHref = pathToFileURL(markdownDir + path.sep).href;
+
+    // For cover-only documents, use a simplified HTML structure
+    if (isCoverOnly) {
+      const html = `<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <base href="${baseHref}">
+    <title>Cover</title>
+    <style>
+      @page {
+        margin: 0;
+        size: A4;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html, body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+      .cover-page {
+        width: 100vw;
+        height: 100vh;
+        margin: 0;
+        padding: 0;
+        position: relative;
+        overflow: hidden;
+      }
+      .cover-page img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    ${coverPages.join('')}
+  </body>
+</html>`;
+
+      // Launch Puppeteer to generate a PDF from the HTML content
+      const browser = await puppeteer.launch({
+        headless: 'new',
+        args: ['--allow-file-access-from-files'] // Allow local file access
+      });
+      const page = await browser.newPage();
+      
+      // Save HTML to a temporary file in the same directory as the markdown
+      // This ensures relative paths work correctly
+      const tempHtmlPath = path.join(markdownDir, `.temp-${Date.now()}.html`);
+      await writeFile(tempHtmlPath, html);
+      
+      try {
+        // Navigate to the temporary HTML file
+        await page.goto(pathToFileURL(tempHtmlPath).href, { 
+          waitUntil: 'networkidle0'
+        });
+        
+        // Define PDF options for cover pages - exactly one page
+        await page.pdf({ 
+          path: pdfPath, 
+          format: 'A4', 
+          printBackground: true,
+          margin: { top: '0', bottom: '0', left: '0', right: '0' },
+          pageRanges: '1' // Only export the first page
+        });
+      } finally {
+        // Clean up temporary file
+        await unlink(tempHtmlPath).catch(() => {}); // Ignore errors if file doesn't exist
+        await browser.close();
+      }
+      
+      return { success: true, pdfPath };
+    }
+
+    // Regular document handling continues below...
 
     // Wrap the HTML content with a basic template and inline styles.
     const html = `<!DOCTYPE html>

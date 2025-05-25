@@ -14,7 +14,7 @@ program
   .option('-r, --range <pages>', 'Page range to extract (e.g., "1", "1-3", "1,3,5", "1-3,5,7-9")')
   .requiredOption('-p, --pdf <file>', 'Output PDF file name')
   .option('-s, --sort <order>', 'Sort order for merging PDFs ("asc" or "desc")', 'asc')
-  .version('0.5.0');
+  .version('0.4.0');
 
 program.parse(process.argv);
 

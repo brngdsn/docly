@@ -88,6 +88,11 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
         padding: 0; 
         line-height: 1.6; 
       }
+      /* Remove all margins when cover pages are present */
+      body:has(.cover-page) {
+        margin: 0 !important;
+        padding: 0 !important;
+      }
       .container {
         margin: 40px;
       }
@@ -95,17 +100,22 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
       .cover-page {
         page: cover;
         page-break-after: always;
-        width: 100vw;
-        height: 100vh;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
         margin: 0;
         padding: 0;
         display: flex;
         align-items: center;
         justify-content: center;
         overflow: hidden;
-        position: relative;
       }
       .cover-page img {
+        position: absolute;
+        top: 0;
+        left: 0;
         width: 100%;
         height: 100%;
         object-fit: cover;

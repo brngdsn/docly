@@ -59,17 +59,21 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
     // Convert Markdown to HTML with syntax highlighting for code blocks
     const htmlContent = marked.parse(markdownContent, { renderer });
 
+    // Post-process to wrap lists in divs for proper margins
+    const processedHtml = htmlContent
+      .replace(/<ul>/g, '<div class="list-wrapper"><ul>')
+      .replace(/<\/ul>/g, '</ul></div>')
+      .replace(/<ol>/g, '<div class="list-wrapper"><ol>')
+      .replace(/<\/ol>/g, '</ol></div>');
+
     // Extract cover pages and main content - use non-greedy regex
     const coverPageRegex = /<div class="cover-page[^>]*><img[^>]*><\/div>/g;
-    const coverPages = htmlContent.match(coverPageRegex) || [];
-    const mainContent = htmlContent.replace(coverPageRegex, '');
+    const coverPages = processedHtml.match(coverPageRegex) || [];
+    const mainContent = processedHtml.replace(coverPageRegex, '');
     
     // Separate front and back covers
     const frontCovers = coverPages.filter(page => page.includes('cover-front'));
     const backCovers = coverPages.filter(page => page.includes('cover-back'));
-
-    // Check if we have any cover pages
-    const hasCoverPages = frontCovers.length > 0 || backCovers.length > 0;
 
     // Create the base href for the HTML document
     const baseHref = pathToFileURL(markdownDir + path.sep).href;
@@ -139,11 +143,15 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
       }
       /* List styles with proper indentation */
       ul, ol {
-        margin: 0.6em 2em;
-        padding-left: 1.5em;
+        margin: 0.6em 0;
+        padding-left: 2em;
       }
       li {
         margin: 0.3em 0;
+      }
+      /* List wrapper for symmetric margins */
+      .list-wrapper {
+        margin: 0 2em;
       }
       pre {
         background: #f4f4f4;
@@ -279,9 +287,7 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
   </head>
   <body>
     ${frontCovers.join('\n')}
-    <div class="container">
-      ${mainContent}
-    </div>
+    ${mainContent ? `<div class="container">${mainContent}</div>` : ''}
     ${backCovers.join('\n')}
   </body>
 </html>`;

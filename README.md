@@ -67,17 +67,18 @@ Docly supports rendering images as full-page covers:
 - **Back Cover**: Use `![cover:back](./back-cover.jpg)` to add a back cover
 - Cover images are rendered on their own page with no margins
 - Images are cropped to fill the entire page (both width and height)
-- Multiple front or back covers are supported
+- **Recommendation**: For best results, use cover directives in separate markdown files
 
-Example with covers:
+Example cover page (cover.md):
 ```markdown
 ![cover:front](./front-cover.jpg)
+```
 
-# My Document
-
-Content goes here...
-
-![cover:back](./back-cover.jpg)
+Then merge with your main document using the PDF merge feature:
+```bash
+docly -m cover.md -p cover.pdf
+docly -m document.md -p document.pdf
+docly -g ./ -p final-book.pdf
 ```
 
 ### Merge multiple PDFs into one:

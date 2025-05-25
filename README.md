@@ -10,6 +10,7 @@
 - ✅ Supports custom sorting of PDFs during merge (default: natural numeric order).
 - ✅ Clean CLI interface with robust error handling.
 - ✅ **NEW:** Full support for images with relative paths in Markdown files.
+- ✅ **NEW:** Cover page support - render images as full-page front or back covers.
 
 ---
 
@@ -57,6 +58,25 @@ Example Markdown with images:
 ```
 
 **Note**: For best results, ensure your image files exist at the specified paths relative to your Markdown file.
+
+#### Cover Pages
+Docly supports rendering images as full-page covers that maintain aspect ratio:
+- **Front Cover**: Use `![cover:front](./cover-image.jpg)` to add a front cover
+- **Back Cover**: Use `![cover:back](./back-cover.jpg)` to add a back cover
+- Cover images are rendered on their own page with no margins
+- Multiple front or back covers are supported
+- Cover images maintain their aspect ratio while filling the page
+
+Example with covers:
+```markdown
+![cover:front](./front-cover.jpg)
+
+# My Document
+
+Content goes here...
+
+![cover:back](./back-cover.jpg)
+```
 
 ### Merge multiple PDFs into one:
 Provide a directory containing PDF files using the `-g` or `--group` flag. Optionally, specify a sort order with `-s` or `--sort` (`asc` or `desc`). By default, files are sorted in natural ascending order.

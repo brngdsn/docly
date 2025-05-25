@@ -35,8 +35,33 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
     // Read the Markdown file content
     const markdownContent = await readFile(markdownPath, 'utf8');
 
+    // Create a custom renderer to handle cover images
+    const renderer = new marked.Renderer();
+    const originalImage = renderer.image.bind(renderer);
+    
+    renderer.image = function(href, title, text) {
+      // Check if this is a cover image (alt text starts with "cover:")
+      if (text && text.toLowerCase().startsWith('cover:')) {
+        const coverType = text.toLowerCase().replace('cover:', '').trim();
+        if (coverType === 'front' || coverType === 'back') {
+          return `<div class="cover-page cover-${coverType}"><img src="${href}" alt="${text}" title="${title || ''}"></div>`;
+        }
+      }
+      // Regular image
+      return originalImage(href, title, text);
+    };
+
     // Convert Markdown to HTML with syntax highlighting for code blocks
-    const htmlContent = marked.parse(markdownContent);
+    const htmlContent = marked.parse(markdownContent, { renderer });
+
+    // Extract cover pages and main content
+    const coverPageRegex = /<div class="cover-page[^>]*>[\s\S]*?<\/div>/g;
+    const coverPages = htmlContent.match(coverPageRegex) || [];
+    const mainContent = htmlContent.replace(coverPageRegex, '');
+    
+    // Separate front and back covers
+    const frontCovers = coverPages.filter(page => page.includes('cover-front'));
+    const backCovers = coverPages.filter(page => page.includes('cover-back'));
 
     // Create the base href for the HTML document
     const baseHref = pathToFileURL(markdownDir + path.sep).href;
@@ -53,6 +78,10 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
       @page {
         margin: 20px;
       }
+      /* Special page setup for cover pages - no margins */
+      @page cover {
+        margin: 0;
+      }
       body { 
         font-family: Arial, sans-serif; 
         margin: 0; 
@@ -61,6 +90,35 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
       }
       .container {
         margin: 40px;
+      }
+      /* Cover page styles */
+      .cover-page {
+        page: cover;
+        page-break-after: always;
+        width: 100vw;
+        height: 100vh;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        position: relative;
+      }
+      .cover-page img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        margin: 0;
+        padding: 0;
+      }
+      /* Ensure front cover is at the beginning */
+      .cover-front {
+        page-break-before: avoid;
+      }
+      /* Ensure back cover is at the end */
+      .cover-back {
+        page-break-before: always;
       }
       h1, h2, h3, h4, h5, h6 { 
         color: #333; 
@@ -180,9 +238,11 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
     </style>
   </head>
   <body>
+    ${frontCovers.join('\n')}
     <div class="container">
-      ${htmlContent}
+      ${mainContent}
     </div>
+    ${backCovers.join('\n')}
   </body>
 </html>`;
 

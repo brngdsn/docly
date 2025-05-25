@@ -141,6 +141,7 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
       ul, ol {
         margin: 0.6em 0;
         padding-left: 2em;
+        padding-right: 2em;
       }
       li {
         margin: 0.3em 0;

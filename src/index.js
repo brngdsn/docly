@@ -2,13 +2,19 @@ import { readFile } from 'fs/promises';
 import { marked } from 'marked';
 import hljs from 'highlight.js';
 import puppeteer from 'puppeteer';
+import path from 'path';
+import { pathToFileURL } from 'url';
+import { writeFile, unlink } from 'fs/promises';
+import { tmpdir } from 'os';
 
 // Configure marked to use highlight.js for code blocks.
 marked.setOptions({
   highlight: (code, lang) => {
     const language = hljs.getLanguage(lang) ? lang : 'plaintext';
     return hljs.highlight(code, { language }).value;
-  }
+  },
+  mangle: false,
+  headerIds: false
 });
 
 /**
@@ -22,17 +28,25 @@ marked.setOptions({
  */
 export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
   try {
+    // Get the absolute path and directory of the markdown file
+    const absoluteMarkdownPath = path.resolve(markdownPath);
+    const markdownDir = path.dirname(absoluteMarkdownPath);
+    
     // Read the Markdown file content
     const markdownContent = await readFile(markdownPath, 'utf8');
 
     // Convert Markdown to HTML with syntax highlighting for code blocks
     const htmlContent = marked.parse(markdownContent);
 
+    // Create the base href for the HTML document
+    const baseHref = pathToFileURL(markdownDir + path.sep).href;
+
     // Wrap the HTML content with a basic template and inline styles.
     const html = `<!DOCTYPE html>
 <html>
   <head>
     <meta charset="UTF-8">
+    <base href="${baseHref}">
     <title>Document</title>
     <style>
       /* PDF page margins */
@@ -82,6 +96,18 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
       }
       th { 
         background-color: #f2f2f2; 
+      }
+      /* Image styles */
+      img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+        margin: 1em auto;
+      }
+      /* Inline images */
+      p img {
+        display: inline;
+        margin: 0;
       }
       /* Highlight.js default theme */
       .hljs {
@@ -161,19 +187,36 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
 </html>`;
 
     // Launch Puppeteer to generate a PDF from the HTML content
-    const browser = await puppeteer.launch();
-    const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: 'networkidle0' });
-    
-    // Define PDF options with proper margins.
-    await page.pdf({ 
-      path: pdfPath, 
-      format: 'A4', 
-      printBackground: true,
-      margin: { top: '20px', bottom: '20px', left: '20px', right: '20px' }
+    const browser = await puppeteer.launch({
+      headless: 'new',
+      args: ['--allow-file-access-from-files'] // Allow local file access
     });
+    const page = await browser.newPage();
     
-    await browser.close();
+    // Save HTML to a temporary file in the same directory as the markdown
+    // This ensures relative paths work correctly
+    const tempHtmlPath = path.join(markdownDir, `.temp-${Date.now()}.html`);
+    await writeFile(tempHtmlPath, html);
+    
+    try {
+      // Navigate to the temporary HTML file
+      await page.goto(pathToFileURL(tempHtmlPath).href, { 
+        waitUntil: 'networkidle0'
+      });
+      
+      // Define PDF options with proper margins.
+      await page.pdf({ 
+        path: pdfPath, 
+        format: 'A4', 
+        printBackground: true,
+        margin: { top: '20px', bottom: '20px', left: '20px', right: '20px' }
+      });
+    } finally {
+      // Clean up temporary file
+      await unlink(tempHtmlPath).catch(() => {}); // Ignore errors if file doesn't exist
+      await browser.close();
+    }
+    
     return { success: true, pdfPath };
   } catch (error) {
     throw new Error(`Conversion failed: ${error.message}`);

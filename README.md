@@ -9,6 +9,7 @@
 - ✅ Merge multiple PDFs from a directory into one.
 - ✅ Supports custom sorting of PDFs during merge (default: natural numeric order).
 - ✅ Clean CLI interface with robust error handling.
+- ✅ **NEW:** Full support for images with relative paths in Markdown files.
 
 ---
 
@@ -38,6 +39,24 @@ or
 ```sh
 docly --markdown input.md --pdf output.pdf
 ```
+
+#### Image Support
+Docly now fully supports images in your Markdown files:
+- **Relative paths**: Images referenced with relative paths (e.g., `./images/diagram.png`) are automatically resolved relative to the Markdown file's location
+- **Absolute paths**: Full system paths are supported
+- **Web URLs**: External images from the web (http/https) work as expected
+- **Automatic sizing**: Images are automatically sized to fit within the PDF page width while maintaining aspect ratio
+
+Example Markdown with images:
+```markdown
+# My Document
+
+![Local image](./assets/screenshot.png)
+![Parent directory image](../images/logo.png)
+![Web image](https://example.com/image.jpg)
+```
+
+**Note**: For best results, ensure your image files exist at the specified paths relative to your Markdown file.
 
 ### Merge multiple PDFs into one:
 Provide a directory containing PDF files using the `-g` or `--group` flag. Optionally, specify a sort order with `-s` or `--sort` (`asc` or `desc`). By default, files are sorted in natural ascending order.

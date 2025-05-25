@@ -84,7 +84,7 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
     <style>
       /* PDF page margins */
       @page {
-        margin: 20px;
+        margin: 0.5in;
       }
       /* Special page setup for cover pages - no margins */
       @page cover {
@@ -97,7 +97,8 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
         line-height: 1.6; 
       }
       .container {
-        margin: 40px;
+        margin: 0;
+        padding: 0.5in;
         page-break-before: auto;
       }
       /* Cover page styles */
@@ -298,7 +299,7 @@ export async function convertMarkdownToPdf({ markdownPath, pdfPath }) {
         path: pdfPath, 
         format: 'A4', 
         printBackground: true,
-        margin: hasCoverPages ? { top: '0', bottom: '0', left: '0', right: '0' } : { top: '20px', bottom: '20px', left: '20px', right: '20px' }
+        margin: hasCoverPages ? { top: '0', bottom: '0', left: '0', right: '0' } : { top: '0.5in', bottom: '0.5in', left: '0.5in', right: '0.5in' }
       });
     } finally {
       // Clean up temporary file

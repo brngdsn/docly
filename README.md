@@ -1,12 +1,13 @@
 # 📄 Docly - Markdown to PDF Converter & PDF Merger
 
-**Docly** is a command-line tool that converts Markdown files into PDFs using **Puppeteer** for rendering and **Marked.js** for Markdown parsing. It also supports merging multiple PDF files into one. Syntax highlighting for code blocks is provided by **Highlight.js**, and PDF merging is handled by **pdf-lib**.
+**Docly** is a command-line tool that converts Markdown files into PDFs using **Puppeteer** for rendering and **Marked.js** for Markdown parsing. It also supports merging multiple PDF files into one and extracting specific pages from PDFs. Syntax highlighting for code blocks is provided by **Highlight.js**, and PDF manipulation is handled by **pdf-lib**.
 
 ---
 
 ## 🚀 Features
 - ✅ Convert Markdown to PDF effortlessly.
 - ✅ Merge multiple PDFs from a directory into one.
+- ✅ Extract specific pages from existing PDFs.
 - ✅ Supports custom sorting of PDFs during merge (default: natural numeric order).
 - ✅ Clean CLI interface with robust error handling.
 - ✅ **NEW:** Full support for images with relative paths in Markdown files.
@@ -91,6 +92,33 @@ Example with descending sort:
 docly -g ./pdfs -p merged.pdf -s desc
 ```
 
+### Extract pages from a PDF:
+Extract specific pages from an existing PDF using the `-e` or `--extract` flag along with `-r` or `--range` to specify which pages to extract.
+```sh
+docly -e input.pdf -r "1-3" -p output.pdf
+```
+
+Supported page range formats:
+- Single page: `"5"`
+- Page range: `"1-3"`
+- Multiple pages: `"1,3,5"`
+- Combined: `"1-3,5,7-9"`
+
+Examples:
+```sh
+# Extract first page only
+docly -e document.pdf -r "1" -p first-page.pdf
+
+# Extract pages 1 through 5
+docly -e document.pdf -r "1-5" -p pages1-5.pdf
+
+# Extract pages 1, 3, and 5
+docly -e document.pdf -r "1,3,5" -p selected-pages.pdf
+
+# Extract pages 1-3 and 7-10
+docly -e document.pdf -r "1-3,7-10" -p combined-pages.pdf
+```
+
 ---
 
 ## 🖥 Example Output
@@ -113,6 +141,17 @@ docly -g ./pdfs -p "Agentic Engineering.pdf"
 ```
 Merging PDFs from "./pdfs" into "Agentic Engineering.pdf"...
 Merge successful.
+```
+
+### PDF Page Extraction:
+```sh
+docly -e "Full Document.pdf" -r "1-3,5" -p "Selected Pages.pdf"
+```
+**Output:**
+```
+Extracting pages "1-3,5" from "Full Document.pdf" to "Selected Pages.pdf"...
+Extracted 4 page(s) from 10 total pages
+Extraction successful.
 ```
 
 ---

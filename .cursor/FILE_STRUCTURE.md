@@ -12,6 +12,7 @@ docly/
 │   └── docly.js              # Main CLI executable
 ├── src/                       # Source code directory
 │   ├── index.js              # Main application entry point
+│   ├── pdfExtractor.js       # PDF page extraction functionality
 │   └── pdfMerger.js          # PDF merging functionality
 ├── .gitignore                 # Git ignore rules
 ├── .nvmrc                     # Node version specification
@@ -35,6 +36,7 @@ docly/
 ### Source Code
 - **src/index.js**: Main application logic and entry point
 - **src/pdfMerger.js**: Module for PDF merging functionality
+- **src/pdfExtractor.js**: Module for PDF page extraction functionality
 
 ### Executable
 - **bin/docly.js**: CLI executable script for the docly command
